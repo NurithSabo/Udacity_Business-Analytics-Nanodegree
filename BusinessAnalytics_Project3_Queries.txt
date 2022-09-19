@@ -1,0 +1,55 @@
+/*Query 1
+Sales by genre top10*/
+SELECT Genre.Name AS Genre,
+       count(*) AS "Sales by genre"
+FROM Genre
+JOIN Track 
+	ON Genre.GenreId = Track.GenreId
+JOIN InvoiceLine 
+	ON Track.TrackId = InvoiceLine.TrackId
+GROUP BY Genre.Name
+ORDER BY "Sales by genre" DESC
+Limit 10;
+
+/*Query 2
+Which genres made over $50?*/
+SELECT Genre, "Revenue in genre"
+FROM(
+SELECT Genre.Name AS Genre, round(SUM(InvoiceLine.UnitPrice*InvoiceLine.Quantity),2) AS "Revenue in genre"
+FROM Genre
+JOIN Track
+	ON Genre.GenreId = Track.GenreId
+JOIN InvoiceLine
+	ON Track.TrackId = InvoiceLine.TrackId
+GROUP BY Genre.Name)
+WHERE "Revenue in genre" >50
+ORDER BY "Revenue in genre" DESC;
+
+/*Query 3
+What was the annual revenuefrom classics?*/
+SELECT 
+  Genre.Name As Genre,
+  STRFTIME('%Y', Invoice.InvoiceDate) As Year,
+  SUM(InvoiceLine.UnitPrice * InvoiceLine.Quantity) As "Classics revenue"
+FROM Genre
+JOIN Track
+  ON Genre.GenreId = Track.GenreId
+JOIN InvoiceLine
+  ON Track.TrackId = InvoiceLine.TrackId
+JOIN Invoice
+  ON Invoice.InvoiceId = InvoiceLine.InvoiceId
+WHERE Genre LIKE "Classical"
+GROUP BY Year
+ORDER BY Year;
+
+/*Query 4
+Who were the top10 most spending customers in the USA?*/
+SELECT (Customer.LastName || " " || Customer.FirstName) as Customer, 
+	Sum(Invoice.Total) as "Total spending"
+FROM Invoice
+JOIN Customer
+	ON Invoice.CustomerId=Customer.CustomerId
+WHERE Customer.Country = "USA"	
+Group by  Customer
+Order by "Total spending" DESC
+limit 10;
